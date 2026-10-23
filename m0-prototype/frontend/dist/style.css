@@ -1,9 +1,10 @@
 * { box-sizing: border-box; margin: 0; }
 :root {
-  /* Card/panel opacity is user-tunable from the panel (app.js stores
-     it in localStorage). The wallpaper shows through because these are
-     real alpha values composited by the OS, not a CSS trick. */
-  --card-alpha: 0.58;
+  /* Card backing opacity is user-tunable from the panel (app.js
+     stores it in localStorage). 0 = no backing plate at all: the
+     content sits directly on the wallpaper. Any value above 0 fades
+     a real alpha background back in, composited by the OS. */
+  --card-alpha: 0;
   --panel-alpha: 0.72;
 }
 html, body { height: 100%; }
@@ -53,7 +54,7 @@ kbd {
 .mini-btn:disabled { opacity: 0.4; cursor: default; }
 .update-row { flex-wrap: wrap; }
 
-/* 示例卡片：半透明玻璃质感，墙纸必须能透过来 */
+/* 示例卡片：默认无背景板，内容直接贴在墙纸上；背景板靠 --card-alpha 随时调回 */
 .card {
   position: absolute; border-radius: 14px; overflow: hidden;
   background: rgba(255, 255, 255, var(--card-alpha)); color: #202124;
@@ -61,7 +62,18 @@ kbd {
   box-shadow: 0 6px 24px rgba(0,0,0,0.14);
   backdrop-filter: blur(18px) saturate(1.35);
   -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  /* A faint light halo keeps dark text readable on busy wallpapers
+     even with no backing plate at all. */
+  text-shadow: 0 1px 2px rgba(255,255,255,0.45), 0 0 10px rgba(255,255,255,0.3);
 }
+html.no-card-bg .card {
+  border-color: transparent; box-shadow: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+html.no-card-bg .card header { background: transparent; }
+html.no-card-bg .card th { background: transparent; }
+/* In edit mode the card bounds still need to be visible for dragging. */
+html.no-card-bg body.edit .card { outline: 1px dashed rgba(0,0,0,0.35); outline-offset: -1px; }
 .card header {
   padding: 8px 12px; font-size: 13px; font-weight: 700;
   background: rgba(255,255,255,0.22);
