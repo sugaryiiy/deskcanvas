@@ -72,6 +72,25 @@ document.getElementById('offsets').addEventListener('click', async (e) => {
   refresh();
 });
 
+// Card transparency: a real alpha on the card background, so the OS
+// compositor blends the card with the wallpaper underneath. Stored
+// locally so the user's preferred see-through level survives restarts
+// (the layout store will own this in M1; localStorage is enough here).
+const alphaSlider = document.getElementById('card-alpha');
+const alphaValue = document.getElementById('card-alpha-value');
+function setCardAlpha(v) {
+  const n = Math.min(95, Math.max(25, Number(v) || 58));
+  document.documentElement.style.setProperty('--card-alpha', String(n / 100));
+  alphaSlider.value = String(n);
+  alphaValue.textContent = n + '%';
+  try { localStorage.setItem('deskcanvas.cardAlpha', String(n)); } catch (e) {}
+}
+alphaSlider.addEventListener('input', () => setCardAlpha(alphaSlider.value));
+try {
+  const saved = localStorage.getItem('deskcanvas.cardAlpha');
+  setCardAlpha(saved === null ? 58 : Number(saved));
+} catch (e) { setCardAlpha(58); }
+
 // Card dragging, edit mode only. In locked mode the OS ignores mouse
 // events for the whole window, so this code simply never fires there —
 // that asymmetry is itself one of the M0 checks.
