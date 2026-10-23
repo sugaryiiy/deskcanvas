@@ -1,16 +1,22 @@
 name: Build macOS DMG
 
-# Builds the M0 prototype into a macOS .app on a GitHub macOS runner and
+# Builds DeskCanvas into a macOS .app on a GitHub macOS runner and
 # packages it as a drag-to-Applications DMG. The app is unsigned
 # (self-use project): first launch needs right-click -> Open.
+#
+# Release flow: pushing a version tag (v*) builds with that version
+# injected into the binary (-X main.Version) and publishes a GitHub
+# Release with the DMG attached — that Release is what the in-app
+# auto-updater checks, downloads, verifies and installs.
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "m0-prototype/**"
-      - ".github/workflows/build-macos-dmg.yml"
+    tags: ["v*"]
+
+permissions:
+  contents: write
 
 jobs:
   build-dmg:
@@ -29,7 +35,14 @@ jobs:
 
       - name: Build the app
         working-directory: m0-prototype
-        run: wails build -clean -platform darwin/arm64
+        env:
+          VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+        run: |
+          if [ -n "$VERSION" ]; then
+            wails build -clean -platform darwin/arm64 -ldflags "-X main.Version=$VERSION"
+          else
+            wails build -clean -platform darwin/arm64
+          fi
 
       - name: Verify the app bundle
         working-directory: m0-prototype
@@ -51,9 +64,25 @@ jobs:
           ls -la dist/
           shasum -a 256 dist/DeskCanvas-M0-macOS-arm64.dmg
 
-      - name: Upload DMG
+      - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
           name: deskcanvas-dmg
           path: m0-prototype/dist/DeskCanvas-M0-macOS-arm64.dmg
           if-no-files-found: error
+
+      - name: Publish GitHub Release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: m0-prototype
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release upload "$VERSION" dist/DeskCanvas-M0-macOS-arm64.dmg --clobber
+          else
+            gh release create "$VERSION" dist/DeskCanvas-M0-macOS-arm64.dmg \
+              --title "DeskCanvas $VERSION" \
+              --notes "DeskCanvas $VERSION — macOS arm64 DMG（未签名，首次启动右键「打开」）。应用内自动更新会检查、下载并校验此 Release 的 DMG 后自动安装。SHA-256 见资产 digest。" \
+              --prerelease
+          fi

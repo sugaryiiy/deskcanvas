@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 // Mode is the whole product in miniature:
@@ -30,16 +31,22 @@ type App struct {
 	mu sync.Mutex
 	// mode is the current canvas mode.
 	mode Mode
-	// levelOffset is the window level relative to the desktop-icon
-	// window level used in locked mode. The right value is an empirical
-	// question (it decides whether cards sit above or below the desktop
-	// icons), so M0 exposes it instead of hard-coding a guess: the
-	// validation panel can step it through -5/-1/0/+1/+5 on the machine.
+	// levelOffset int
 	levelOffset int
+
+	// update is the auto-updater's view of the world (see updater.go);
+	// stagedApp is the extracted .app of a downloaded update, ready
+	// for the apply helper.
+	update    updateInfo
+	stagedApp string
 }
 
 func NewApp() *App {
-	a := &App{mode: ModeLocked, levelOffset: -1}
+	a := &App{
+		mode:        ModeLocked,
+		levelOffset: -1,
+		update:      updateInfo{Current: Version, Status: "idle"},
+	}
 	registerHotkeyApp(a)
 	return a
 }
@@ -47,6 +54,20 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	installHotkey()
+	cleanupPreviousBundle()
+
+	// Check shortly after launch, without delaying the first paint. A
+	// hit is surfaced in the panel; installation itself only starts
+	// when the user presses the update button (or an embedding product
+	// flow chooses to call /api/update/apply directly).
+	go func() {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(4 * time.Second):
+			a.checkUpdate(context.Background())
+		}
+	}()
 }
 
 // domReady is the first moment the native window definitely exists, so
@@ -105,19 +126,23 @@ func (a *App) applyNative() {
 // `go build` / `wails build` and no binding-generation step.
 
 type stateResponse struct {
-	Mode        Mode `json:"mode"`
-	LevelOffset int  `json:"levelOffset"`
+	Mode        Mode       `json:"mode"`
+	LevelOffset int        `json:"levelOffset"`
+	Update      updateInfo `json:"update"`
+}
+
+func (a *App) currentState() stateResponse {
+	m, off := a.state()
+	return stateResponse{Mode: m, LevelOffset: off, Update: a.snapshotUpdate()}
 }
 
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/api/state":
-		m, off := a.state()
-		writeJSON(w, stateResponse{Mode: m, LevelOffset: off})
+		writeJSON(w, a.currentState())
 	case "/api/toggle":
-		m := a.toggleMode()
-		_, off := a.state()
-		writeJSON(w, stateResponse{Mode: m, LevelOffset: off})
+		a.toggleMode()
+		writeJSON(w, a.currentState())
 	case "/api/mode":
 		var body struct {
 			Mode Mode `json:"mode"`
@@ -128,8 +153,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		a.setMode(body.Mode)
-		m, off := a.state()
-		writeJSON(w, stateResponse{Mode: m, LevelOffset: off})
+		writeJSON(w, a.currentState())
 	case "/api/level":
 		var body struct {
 			Offset int `json:"offset"`
@@ -139,8 +163,23 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		a.setLevelOffset(body.Offset)
-		m, off := a.state()
-		writeJSON(w, stateResponse{Mode: m, LevelOffset: off})
+		writeJSON(w, a.currentState())
+	case "/api/update/check":
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		a.checkUpdate(ctx)
+		writeJSON(w, a.currentState())
+	case "/api/update/apply":
+		// Applying can download several MB and then this process exits
+		// as part of the handover, so run it detached and answer now.
+		// Progress and failures land in the update status, which the
+		// panel keeps polling until the app restarts.
+		go func() {
+			if err := a.applyUpdate(context.Background()); err != nil {
+				a.setUpdateStatus("error", err.Error())
+			}
+		}()
+		writeJSON(w, a.currentState())
 	default:
 		http.NotFound(w, r)
 	}

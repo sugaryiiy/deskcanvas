@@ -37,6 +37,13 @@ kbd {
   width: 100%; padding: 8px; border: 0; border-radius: 8px; cursor: pointer;
   background: #16a34a; color: #fff; font-size: 14px; font-weight: 600;
 }
+.mini-btn {
+  background: #2b2f36; color: #e8eaed; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px;
+}
+.mini-btn.primary { background: #16a34a; border-color: #16a34a; color: #fff; }
+.mini-btn:disabled { opacity: 0.4; cursor: default; }
+.update-row { flex-wrap: wrap; }
 
 /* 示例卡片 */
 .card {

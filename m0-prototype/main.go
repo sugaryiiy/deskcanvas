@@ -15,6 +15,14 @@ import (
 var frontendAssets embed.FS
 
 func main() {
+	// When the updater re-execs this binary with --apply-update, it is
+	// a swap helper, not the app: do the bundle swap and exit before
+	// any Wails/window machinery starts.
+	if runApplyUpdateIfRequested() {
+		return
+	}
+	log.Printf("deskcanvas: starting version %s", Version)
+
 	assets, err := fs.Sub(frontendAssets, "frontend/dist")
 	if err != nil {
 		log.Fatal(err)

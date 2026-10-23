@@ -12,8 +12,40 @@ async function refresh() {
     setModeUI(s.mode);
     document.querySelectorAll('#offsets button').forEach(b =>
       b.classList.toggle('active', Number(b.dataset.off) === s.levelOffset));
+    if (s.update) setUpdateUI(s.update);
   } catch (e) { /* app still starting */ }
 }
+
+const versionEl = document.getElementById('version');
+const updateStatusEl = document.getElementById('update-status');
+const applyBtn = document.getElementById('apply-update');
+
+function setUpdateUI(u) {
+  versionEl.textContent = '版本 ' + u.current + (u.latest ? ' · 最新 ' + u.latest : '');
+  applyBtn.disabled = !u.available;
+  const text = {
+    idle: u.available ? '发现新版本 ' + u.latest + '，点「更新并重启」即可自动完成。' : '自动更新：启动后会自动检查 GitHub Releases。',
+    checking: '正在检查更新…',
+    downloading: '正在下载更新 ' + (u.latest || '') + ' 并校验…',
+    ready: '更新已就绪，点「更新并重启」。',
+    applying: '正在安装更新并重启…',
+    uptodate: '已是最新版本。',
+    error: '更新出错：' + (u.detail || '未知错误'),
+  }[u.status];
+  updateStatusEl.textContent = text || (u.detail || '');
+}
+
+document.getElementById('check-update').addEventListener('click', async () => {
+  updateStatusEl.textContent = '正在检查更新…';
+  await fetch('/api/update/check', { method: 'POST' });
+  refresh();
+});
+
+applyBtn.addEventListener('click', async () => {
+  applyBtn.disabled = true;
+  updateStatusEl.textContent = '正在下载、安装更新并重启…';
+  await fetch('/api/update/apply', { method: 'POST' });
+});
 
 function setModeUI(m) {
   mode = m;
