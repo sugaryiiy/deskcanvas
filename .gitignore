@@ -12,3 +12,6 @@ m0-prototype/build/bin/
 .DS_Store
 .idea/
 .vscode/
+
+# Local downloaded artifacts
+dist/
