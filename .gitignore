@@ -1,0 +1,14 @@
+# Build output
+build/bin/
+m0-prototype/build/bin/
+*.app/
+
+# Go
+*.exe
+*.test
+*.out
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeskCanvas M0 验证画布</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 验证面板：M0 的 4 项验收都在这里对照操作 -->
+  <section id="panel" class="panel">
+    <div class="panel-head">
+      <span id="mode-badge" class="badge locked">锁定模式 LOCKED</span>
+      <span class="hotkey-hint">全局快捷键 <kbd>⌥</kbd><kbd>⌘</kbd><kbd>D</kbd> 切换模式</span>
+    </div>
+    <ol class="checks">
+      <li><label><input type="checkbox" /> 打开任意应用窗口 —— 它应盖住本画布</label></li>
+      <li><label><input type="checkbox" /> 锁定模式下点桌面图标 —— 点击应穿透画布、正常选中图标</label></li>
+      <li><label><input type="checkbox" /> 按 ⌥⌘D —— 应切到编辑模式（本面板可点、卡片可拖）</label></li>
+      <li><label><input type="checkbox" /> 切换 Space / 调度中心再回来 —— 画布应还在</label></li>
+    </ol>
+    <div class="row">
+      <span>桌面图标层偏移 offset:</span>
+      <div id="offsets" class="offsets">
+        <button data-off="-5">-5</button>
+        <button data-off="-1" class="active">-1</button>
+        <button data-off="0">0</button>
+        <button data-off="1">+1</button>
+        <button data-off="5">+5</button>
+      </div>
+    </div>
+    <p class="note">试每个 offset 时看：卡片是在桌面图标<u>下面</u>（图标完整可见）、还是<u>盖住</u>图标。把最好用的那个记在 README 的验收表里。</p>
+    <button id="toggle" class="toggle">切换到编辑模式</button>
+  </section>
+
+  <!-- 示例卡片：只验证“贴在桌面上”的观感和编辑模式可拖动，内容编辑是 M1 -->
+  <article class="card note" style="left: 60px; top: 340px; width: 300px;">
+    <header>📝 记事本（示例）</header>
+    <p>这张卡片如果看起来像长在壁纸上、<br />而不是浮在窗口里，M0 就成功了一半。<br />编辑模式下拖我的标题栏试试。</p>
+  </article>
+
+  <article class="card table" style="right: 60px; top: 120px; width: 320px;">
+    <header>📅 表格（示例）</header>
+    <table>
+      <tr><th></th><th>周一</th><th>周三</th><th>周五</th></tr>
+      <tr><th>上午</th><td>站会</td><td>评审</td><td>发布</td></tr>
+      <tr><th>下午</th><td>开发</td><td>开发</td><td>复盘</td></tr>
+    </table>
+  </article>
+
+  <article class="card sticker" style="right: 140px; bottom: 80px; width: 180px;">
+    <header>🖼️ 贴图（示例）</header>
+    <div class="fake-img">🌄</div>
+  </article>
+
+<script src="app.js"></script>
+</body>
+</html>

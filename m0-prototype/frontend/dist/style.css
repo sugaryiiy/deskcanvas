@@ -1,0 +1,59 @@
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+kbd {
+  background: #333; color: #fff; border-radius: 4px;
+  padding: 1px 6px; font-size: 12px; font-family: inherit;
+}
+
+/* 验证面板 */
+.panel {
+  position: absolute; left: 24px; top: 24px; width: 430px;
+  background: rgba(20, 22, 26, 0.88); color: #e8eaed;
+  border: 1px solid rgba(255,255,255,0.14); border-radius: 14px;
+  padding: 16px 18px; backdrop-filter: blur(8px);
+}
+.panel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.badge { font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 999px; }
+.badge.locked { background: #14532d; color: #86efac; }
+.badge.edit { background: #7c2d12; color: #fdba74; }
+.hotkey-hint { font-size: 12px; color: #9aa0a6; }
+.checks { margin: 0 0 10px 18px; font-size: 13px; line-height: 1.9; }
+.checks input { margin-right: 6px; }
+.row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 8px; }
+.offsets button {
+  background: #2b2f36; color: #e8eaed; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px; padding: 3px 9px; cursor: pointer;
+}
+.offsets button.active { background: #16a34a; border-color: #16a34a; color: #fff; }
+.note { font-size: 12px; color: #9aa0a6; line-height: 1.6; margin-bottom: 10px; }
+.toggle {
+  width: 100%; padding: 8px; border: 0; border-radius: 8px; cursor: pointer;
+  background: #16a34a; color: #fff; font-size: 14px; font-weight: 600;
+}
+
+/* 示例卡片 */
+.card {
+  position: absolute; border-radius: 14px; overflow: hidden;
+  background: rgba(255, 255, 255, 0.92); color: #202124;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+}
+.card header {
+  padding: 8px 12px; font-size: 13px; font-weight: 700;
+  background: rgba(0,0,0,0.06);
+}
+body.edit .card header { cursor: grab; }
+.card p { padding: 10px 12px; font-size: 13px; line-height: 1.7; }
+.card table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.card th, .card td { border: 1px solid rgba(0,0,0,0.1); padding: 5px 8px; text-align: center; }
+.card th { background: rgba(0,0,0,0.05); }
+.fake-img {
+  height: 120px; display: flex; align-items: center; justify-content: center;
+  font-size: 56px; background: linear-gradient(135deg, #fde68a, #f472b6 55%, #60a5fa);
+}
