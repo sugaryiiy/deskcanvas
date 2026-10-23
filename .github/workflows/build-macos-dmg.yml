@@ -1,0 +1,59 @@
+name: Build macOS DMG
+
+# Builds the M0 prototype into a macOS .app on a GitHub macOS runner and
+# packages it as a drag-to-Applications DMG. The app is unsigned
+# (self-use project): first launch needs right-click -> Open.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "m0-prototype/**"
+      - ".github/workflows/build-macos-dmg.yml"
+
+jobs:
+  build-dmg:
+    runs-on: macos-latest # Apple Silicon (arm64)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: m0-prototype/go.mod
+
+      - name: Install Wails CLI
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Build the app
+        working-directory: m0-prototype
+        run: wails build -clean -platform darwin/arm64
+
+      - name: Verify the app bundle
+        working-directory: m0-prototype
+        run: |
+          APP="$(ls -d build/bin/*.app)"
+          echo "App: $APP"
+          ls -la "$APP/Contents/MacOS/"
+          file "$APP/Contents/MacOS/"*
+
+      - name: Package DMG
+        working-directory: m0-prototype
+        run: |
+          APP="$(ls -d build/bin/*.app)"
+          mkdir -p dist/dmg
+          cp -R "$APP" dist/dmg/
+          ln -s /Applications dist/dmg/Applications
+          hdiutil create -volname "DeskCanvas" -srcfolder dist/dmg \
+            -ov -format UDZO dist/DeskCanvas-M0-macOS-arm64.dmg
+          ls -la dist/
+          shasum -a 256 dist/DeskCanvas-M0-macOS-arm64.dmg
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: deskcanvas-dmg
+          path: m0-prototype/dist/DeskCanvas-M0-macOS-arm64.dmg
+          if-no-files-found: error
