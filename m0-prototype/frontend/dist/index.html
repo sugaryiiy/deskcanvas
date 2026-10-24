@@ -32,10 +32,10 @@
     <p class="note">试每个 offset 时看：卡片是在桌面图标<u>下面</u>（图标完整可见）、还是<u>盖住</u>图标。把最好用的那个记在 README 的验收表里。</p>
     <div class="row">
       <span>卡片背景板:</span>
-      <input id="card-alpha" type="range" min="0" max="95" value="0" />
-      <span id="card-alpha-value">无背景板</span>
+      <input id="card-alpha" type="range" min="0" max="95" value="50" />
+      <span id="card-alpha-value">50%</span>
     </div>
-    <p class="note">拉到最左 = 无背景板，内容直接贴在墙纸上；往右拉可以把半透明背景板加回来。调好后会记住这个设置。</p>
+    <p class="note">背景板是透明的：数值越低越透、越能看见墙纸，拉到最左才是完全无背景板。调好后会记住这个设置。</p>
     <div class="row update-row">
       <span id="version">版本 —</span>
       <button id="check-update" class="mini-btn">检查更新</button>
@@ -46,7 +46,7 @@
   </section>
 
   <!-- 示例卡片：只验证“贴在桌面上”的观感和编辑模式可拖动，内容编辑是 M1 -->
-  <article class="card note" style="left: 60px; top: 340px; width: 300px;">
+  <article class="card note" style="left: 60px; bottom: 80px; width: 300px;">
     <header>📝 记事本（示例）</header>
     <p>这张卡片如果看起来像长在壁纸上、<br />而不是浮在窗口里，M0 就成功了一半。<br />编辑模式下拖我的标题栏试试。</p>
   </article>

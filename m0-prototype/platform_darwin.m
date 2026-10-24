@@ -56,7 +56,18 @@ static void dc_apply(int locked, int levelOffset, int attempts) {
 
     NSScreen *screen = [w screen] ?: [NSScreen mainScreen];
     if (screen != nil) {
-        [w setFrame:[screen frame] display:YES];
+        // Use the visible frame, NOT the full screen frame: the full
+        // frame covers the menu-bar area and, critically, the screen
+        // edge the auto-hidden Dock uses as its reveal trigger — with
+        // the canvas pressed against the bottom edge the Dock never
+        // comes out. visibleFrame already excludes a pinned Dock and
+        // the menu bar; the extra inset keeps a few points of every
+        // edge free so an auto-hidden Dock (any side) still triggers.
+        NSRect f = [screen visibleFrame];
+        f = NSInsetRect(f, 3, 3);
+        f.origin.y += 4;
+        f.size.height -= 4;
+        [w setFrame:f display:YES];
     }
     [w setStyleMask:NSWindowStyleMaskBorderless];
     [w setOpaque:NO];

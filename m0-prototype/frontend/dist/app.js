@@ -90,8 +90,8 @@ function setCardAlpha(v) {
 alphaSlider.addEventListener('input', () => setCardAlpha(alphaSlider.value));
 try {
   const saved = localStorage.getItem('deskcanvas.cardAlpha');
-  setCardAlpha(saved === null ? 0 : Number(saved));
-} catch (e) { setCardAlpha(0); }
+  setCardAlpha(saved === null ? 50 : Number(saved));
+} catch (e) { setCardAlpha(50); }
 
 // Card dragging, edit mode only. In locked mode the OS ignores mouse
 // events for the whole window, so this code simply never fires there —

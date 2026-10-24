@@ -1,11 +1,12 @@
 * { box-sizing: border-box; margin: 0; }
 :root {
-  /* Card backing opacity is user-tunable from the panel (app.js
-     stores it in localStorage). 0 = no backing plate at all: the
-     content sits directly on the wallpaper. Any value above 0 fades
-     a real alpha background back in, composited by the OS. */
-  --card-alpha: 0;
-  --panel-alpha: 0.72;
+  /* Backing plates stay, but they are TRANSPARENT: the plate is a
+     sheet of glass over the wallpaper, never a solid board. Card
+     opacity is user-tunable from the panel (app.js stores it in
+     localStorage); 0 removes the plate entirely for anyone who
+     wants content floating with nothing behind it. */
+  --card-alpha: 0.5;
+  --panel-alpha: 0.55;
 }
 html, body { height: 100%; }
 body {
