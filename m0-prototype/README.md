@@ -52,12 +52,7 @@
 
 发布方式：给仓库打 `v*` 标签推送，CI 会把标签注入二进制版本并自动创建 GitHub Release（挂 DMG）。已安装的应用启动后自动检查 Release，发现新版会在面板提示，点「更新并重启」即自动完成：下载 DMG → 按 GitHub 资产 digest 校验 SHA-256 → 解出 .app → 新二进制以 `--apply-update` 模式换包、去隔离属性、重启；旧包保留为 `DeskCanvas.previous.app`，新版正常启动后自动清除，换包失败会自动回滚。
 
-仓库是私有的，应用读取 Release 需要一个**只读令牌**（不写进二进制），二选一放好即可（只需一次）：
-
-- 环境变量 `DESKCANVAS_UPDATE_TOKEN`，或
-- 文件 `~/Library/Application Support/DeskCanvas/update-token`（一行一个 fine-grained PAT：仅 deskcanvas 仓库、Contents 只读）
-
-没有令牌时检查会报 401/404，属预期；仓库若改为公开则无需令牌。注意：当前已装的 v0.1.0-m0 没有更新器，需手动安装一次 v0.1.1-m0，之后版本全自动。
+仓库自 2026-10-24 起为**公开**仓库（用户拍板，图省事），应用可直接读取 Release，**不需要任何令牌**。（若将来再改回私有，更新器也支持从环境变量 `DESKCANVAS_UPDATE_TOKEN` 或文件 `~/Library/Application Support/DeskCanvas/update-token` 读一个仅本仓库 Contents 只读的 fine-grained PAT；令牌永不写进二进制。）
 
 ## 已知边界
 
